@@ -4,7 +4,7 @@ Version: 1.0
 Author: Erik Fast (fasterik.net)
 License: CC0
 
-This library provides a fast 64 bit PRNG using the xoshiro256+ algorithm, plus
+This library provides a fast 64 bit PRNG using the xoshiro256++ algorithm, plus
 some helper functions for generating integers in a range, random floats and
 doubles, and sampling a normal distribution.
 
@@ -12,9 +12,15 @@ The following page was used as a reference:
 
 https://prng.di.unimi.it/
 
-xoshiro256+ was chosen because it's fast, simple to implement and understand,
+xoshiro256++ was chosen because it's fast, simple to implement and understand,
 and seems to have good enough statistical properties for non-cryptographic
 purposes.
+
+Note that if you only need to generate float/doubles, you might want to replace
+xoshiro256++ with xoshiro256+. See the commented implementation below
+random_u64(). That version is 15% faster but fails linearity tests on the low
+bits, which don't affect float/double generation. For more details, see the
+above link.
 
 
 API:
@@ -45,6 +51,14 @@ double random_double(RandomState *state, double lower, double upper);
 
 // Sample a normal distribution with the given mean and standard deviation
 double random_gaussian(RandomState *state, double mu, double sigma);
+
+
+Changelog:
+
+1.1:
+  - Switched from xoshiro256+ to xoshiro256++.
+1.0:
+  - Initial release.
 
 */
 
@@ -79,6 +93,27 @@ static inline void random_seed(RandomState *state, uint64_t seed) {
     state->s[3] = (seed = random__split_mix_64(seed));
 }
 
+static inline uint64_t random__rotl(const uint64_t x, int k) {
+	return (x << k) | (x >> (64 - k));
+}
+
+// xoshiro256++ implementation based on the one by David Blackman and Sebastiano Vigna:
+//     https://prng.di.unimi.it/xoshiro256plusplus.c
+static inline uint64_t random_u64(RandomState *state) {
+	const uint64_t result = random__rotl(state->s[0] + state->s[3], 23) + state->s[0];
+	const uint64_t t = state->s[1] << 17;
+
+	state->s[2] ^= state->s[0];
+	state->s[3] ^= state->s[1];
+	state->s[1] ^= state->s[2];
+	state->s[0] ^= state->s[3];
+	state->s[2] ^= t;
+	state->s[3] = random__rotl(state->s[3], 45);
+
+	return result;
+}
+
+/*
 // xoshiro256+ implementation based on the one by David Blackman and Sebastiano Vigna:
 //     https://prng.di.unimi.it/xoshiro256plus.c
 static inline uint64_t random_u64(RandomState *state) {
@@ -94,6 +129,7 @@ static inline uint64_t random_u64(RandomState *state) {
 
 	return result;
 }
+*/
 
 // Debiased modulo (Java's method) from
 //     https://www.pcg-random.org/posts/bounded-rands.html
