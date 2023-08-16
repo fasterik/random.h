@@ -1,6 +1,6 @@
 /* random.h, a C header for fast and easy random number generation.
 
-Version: 1.0
+Version: 1.1
 Author: Erik Fast (fasterik.net)
 License: CC0
 
