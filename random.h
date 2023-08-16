@@ -94,40 +94,40 @@ static inline void random_seed(RandomState *state, uint64_t seed) {
 }
 
 static inline uint64_t random__rotl(const uint64_t x, int k) {
-	return (x << k) | (x >> (64 - k));
+    return (x << k) | (x >> (64 - k));
 }
 
 // xoshiro256++ implementation based on the one by David Blackman and Sebastiano Vigna:
 //     https://prng.di.unimi.it/xoshiro256plusplus.c
 static inline uint64_t random_u64(RandomState *state) {
-	const uint64_t result = random__rotl(state->s[0] + state->s[3], 23) + state->s[0];
-	const uint64_t t = state->s[1] << 17;
+    const uint64_t result = random__rotl(state->s[0] + state->s[3], 23) + state->s[0];
+    const uint64_t t = state->s[1] << 17;
 
-	state->s[2] ^= state->s[0];
-	state->s[3] ^= state->s[1];
-	state->s[1] ^= state->s[2];
-	state->s[0] ^= state->s[3];
-	state->s[2] ^= t;
-	state->s[3] = random__rotl(state->s[3], 45);
+    state->s[2] ^= state->s[0];
+    state->s[3] ^= state->s[1];
+    state->s[1] ^= state->s[2];
+    state->s[0] ^= state->s[3];
+    state->s[2] ^= t;
+    state->s[3] = random__rotl(state->s[3], 45);
 
-	return result;
+    return result;
 }
 
 /*
 // xoshiro256+ implementation based on the one by David Blackman and Sebastiano Vigna:
 //     https://prng.di.unimi.it/xoshiro256plus.c
 static inline uint64_t random_u64(RandomState *state) {
-	const uint64_t result = state->s[0] + state->s[3];
-	const uint64_t t = state->s[1] << 17;
+    const uint64_t result = state->s[0] + state->s[3];
+    const uint64_t t = state->s[1] << 17;
 
-	state->s[2] ^= state->s[0];
-	state->s[3] ^= state->s[1];
-	state->s[1] ^= state->s[2];
-	state->s[0] ^= state->s[3];
-	state->s[2] ^= t;
-	state->s[3] = (state->s[3] << 45) | (state->s[3] >> 19);
+    state->s[2] ^= state->s[0];
+    state->s[3] ^= state->s[1];
+    state->s[1] ^= state->s[2];
+    state->s[0] ^= state->s[3];
+    state->s[2] ^= t;
+    state->s[3] = (state->s[3] << 45) | (state->s[3] >> 19);
 
-	return result;
+    return result;
 }
 */
 
@@ -179,10 +179,10 @@ static inline double random_gaussian(RandomState *state, double mu, double sigma
 }
 
 #ifdef __cplusplus
-}  /* extern "C" */
+}  //  extern "C"
 #endif
 
-#endif  /* RANDOM_H_INCLUDE */
+#endif  //  RANDOM_H_INCLUDE
 
 /*
 To the extent possible under law, the author has dedicated all copyright and
