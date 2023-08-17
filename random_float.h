@@ -6,7 +6,7 @@ License: CC0
 
 This library provides fast floating point number generation using the
 xoshiro256+ algorithm. If you need a more general purpose random number
-generator, consider using the sibling library, random.h
+generator, consider using the sibling library, random.h.
 
 The following page was used as a reference:
 
@@ -28,7 +28,7 @@ double rf_double(RFState *state, double lower, double upper);
 
 // Sample a normal distribution with the given mean and standard deviation
 float rf_float_gaussian(RFState *state, float mu, float sigma);
-double rf_gaussian(RFState *state, double mu, double sigma);
+double rf_double_gaussian(RFState *state, double mu, double sigma);
 
 
 Changelog:

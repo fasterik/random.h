@@ -46,7 +46,7 @@ double random_double(RandomState *state, double lower, double upper);
 
 // Sample a normal distribution with the given mean and standard deviation
 float random_float_gaussian(RandomState *state, float mu, float sigma);
-double random_gaussian(RandomState *state, double mu, double sigma);
+double random_double_gaussian(RandomState *state, double mu, double sigma);
 
 
 Changelog:
