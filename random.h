@@ -1,6 +1,6 @@
 /* random.h, a C header for fast and easy random number generation.
 
-Version: 1.1
+Version: 1.2
 Author: Erik Fast (fasterik.net)
 License: CC0
 
@@ -16,11 +16,10 @@ xoshiro256++ was chosen because it's fast, simple to implement and understand,
 and seems to have good enough statistical properties for non-cryptographic
 purposes.
 
-Note that if you only need to generate float/doubles, you might want to replace
-xoshiro256++ with xoshiro256+. See the commented implementation below
-random_u64(). That version is 15% faster but fails linearity tests on the low
-bits, which don't affect float/double generation. For more details, see the
-above link.
+If you only need to generate floating point numbers, consider using the sibling
+library, random_float.h instead. It uses the ~15% faster algorithm xoshiro256+,
+which is recommended by the authors for floating point but not for general
+purpose random numbers.
 
 
 API:
@@ -37,24 +36,23 @@ uint64_t random_range(RandomState *state, uint64_t range);
 // Generate lower <= x <= upper
 int random_int(RandomState *state, int lower, int upper);
 
-// Generate 0.0f <= x < 1.0f
+// Generate floating point 0 <= x < 1
 float random_float_01(RandomState *state);
-
-// Generate 0.0 <= x < 1.0
 double random_double_01(RandomState *state);
 
-// Generate lower <= x < upper
+// Generate floating point lower <= x < upper
 float random_float(RandomState *state, float lower, float upper);
-
-// Generate lower <= x < upper
 double random_double(RandomState *state, double lower, double upper);
 
 // Sample a normal distribution with the given mean and standard deviation
+float random_float_gaussian(RandomState *state, float mu, float sigma);
 double random_gaussian(RandomState *state, double mu, double sigma);
 
 
 Changelog:
 
+1.2:
+  - Added random_float_gaussian, renamed random_gaussian to random_double_gaussian.
 1.1:
   - Switched from xoshiro256+ to xoshiro256++.
 1.0:
@@ -113,24 +111,6 @@ static inline uint64_t random_u64(RandomState *state) {
     return result;
 }
 
-/*
-// xoshiro256+ implementation based on the one by David Blackman and Sebastiano Vigna:
-//     https://prng.di.unimi.it/xoshiro256plus.c
-static inline uint64_t random_u64(RandomState *state) {
-    const uint64_t result = state->s[0] + state->s[3];
-    const uint64_t t = state->s[1] << 17;
-
-    state->s[2] ^= state->s[0];
-    state->s[3] ^= state->s[1];
-    state->s[1] ^= state->s[2];
-    state->s[0] ^= state->s[3];
-    state->s[2] ^= t;
-    state->s[3] = (state->s[3] << 45) | (state->s[3] >> 19);
-
-    return result;
-}
-*/
-
 // Debiased modulo (Java's method) from
 //     https://www.pcg-random.org/posts/bounded-rands.html
 
@@ -167,7 +147,18 @@ static inline double random_double(RandomState *state, double lower, double uppe
     return lower + (upper - lower) * random_double_01(state);
 }
 
-static inline double random_gaussian(RandomState *state, double mu, double sigma) {
+static inline float random_float_gaussian(RandomState *state, float mu, float sigma) {
+    // See https://en.wikipedia.org/wiki/Marsaglia_polar_method
+    float u, s;
+    do {
+        u = random_float_01(state) * 2.0 - 1.0;
+        s = u * u;
+    } while (s >= 1.0 || s == 0.0);
+
+    return mu + sigma * (u * sqrt(-0.5 * log(s) / s));
+}
+
+static inline double random_double_gaussian(RandomState *state, double mu, double sigma) {
     // See https://en.wikipedia.org/wiki/Marsaglia_polar_method
     double u, s;
     do {
